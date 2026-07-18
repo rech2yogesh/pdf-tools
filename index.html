@@ -3,18 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Toolkit</title>
+<title>Browser Tools</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F8F9FA;--surface:#FFFFFF;--surface2:#F1F3F5;--surface3:#E9ECEF;
-  --border:#DEE2E6;--border-mid:#CED4DA;
-  --accent:#0369A1;--accent-dim:rgba(3,105,161,.07);--accent-glow:rgba(3,105,161,.15);
-  --accent-text:#075985;--accent-border:rgba(3,105,161,.2);
+  --bg:#FFF7F5;--surface:#FFFFFF;--surface2:#FFF1EC;--surface3:#FFE4D9;
+  --border:#FDDDD4;--border-mid:#FBCAB8;
+  --accent:#C8420A;--accent-dim:rgba(200,66,10,.08);--accent-glow:rgba(200,66,10,.15);
+  --accent-text:#9A3008;--accent-border:rgba(200,66,10,.2);
   --success:#2D6A4F;--success-dim:rgba(45,106,79,.07);--success-bd:rgba(45,106,79,.2);
   --err:#C0392B;--err-dim:rgba(192,57,43,.07);
   --warn:#92400E;--warn-dim:rgba(146,64,14,.07);--warn-bd:rgba(146,64,14,.2);
@@ -59,9 +60,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .nav-item.active .nav-badge{background:var(--accent-dim);color:var(--accent-text);border-color:var(--accent-border)}
 
 /* ── Main ── */
-.main{flex:1;overflow-y:auto;padding:36px 40px}
-.panel{display:none;max-width:700px}
-.panel.active{display:block}
+.main{flex:1;overflow-y:auto;padding:36px 48px}
+.panel{display:none}
+.panel.active{display:grid;grid-template-columns:minmax(0,560px) 1fr;grid-template-rows:auto;column-gap:40px}
+.panel-hd{grid-column:1/-1}
+.panel-full{grid-column:1/-1}
+.panel-main{grid-column:1}
+.panel-side{grid-column:2;padding-top:4px}
 
 /* ── Panel header ── */
 .panel-hd{margin-bottom:28px}
@@ -170,7 +175,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 /* ── Watermark preview ── */
 .wm-preview{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-lg);height:110px;display:flex;align-items:center;justify-content:center;margin-top:14px;overflow:hidden}
-.wm-preview-text{font-size:24px;font-weight:700;color:rgba(3,105,161,.15);transform:rotate(-25deg);white-space:nowrap;letter-spacing:3px;pointer-events:none}
+.wm-preview-text{font-size:24px;font-weight:700;color:rgba(200,66,10,.15);transform:rotate(-25deg);white-space:nowrap;letter-spacing:3px;pointer-events:none}
 
 /* ── Thumbnails ── */
 .thumbs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px}
@@ -245,7 +250,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 .footer strong{color:var(--text-mid)}
 .footer a{color:var(--accent-text);text-decoration:none}
 
+/* ── Side info panel ── */
+.side-card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:16px}
+.side-card-title{font-size:12px;font-weight:500;color:var(--text-primary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.side-card-title svg{color:var(--text-muted)}
+.side-card-list{display:flex;flex-direction:column;gap:8px}
+.side-tip{display:flex;align-items:flex-start;gap:8px}
+.side-tip-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px}
+.side-tip p{font-size:12px;color:var(--text-muted);line-height:1.5}
+.side-tip strong{color:var(--text-secondary);font-weight:500}
+.side-stat{display:flex;align-items:baseline;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)}
+.side-stat:last-child{border-bottom:none}
+.side-stat-label{font-size:12px;color:var(--text-muted)}
+.side-stat-val{font-size:12px;font-weight:500;color:var(--text-primary);font-family:var(--mono)}
+
 /* ── Responsive ── */
+@media(max-width:900px){
+  .panel.active{grid-template-columns:1fr}
+  .panel-side{display:none}
+  .panel-hd{grid-column:1}
+}
 @media(max-width:640px){
   .sidebar{display:none}.main{padding:20px 16px}
   .level-cards,.img-format-grid,.form-row{grid-template-columns:1fr}
@@ -254,6 +278,45 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   .summary-stat{border-right:none;border-bottom:1px solid var(--border)}
   .topbar-tagline{display:none}
 }
+
+/* ── Category nav ── */
+.cat-divider{height:1px;background:var(--border);margin:10px 4px}
+.nav-cat-badge{font-size:9px;background:#FEF3C7;color:#92400E;border:1px solid #FDE68A;border-radius:3px;padding:1px 5px;font-family:var(--mono);margin-left:auto}
+
+/* ── Image tool grid ── */
+.img-tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:16px}
+.img-preview-canvas{width:100%;border-radius:var(--r-lg) var(--r-lg) 0 0;display:block;background:var(--surface2)}
+.img-item{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-lg);overflow:hidden;cursor:pointer;transition:all .12s;position:relative}
+.img-item:hover{border-color:var(--border-mid)}
+.img-item.selected{border-color:var(--accent)}
+.img-item.selected::after{content:"✓";position:absolute;top:5px;right:5px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:18px;text-align:center}
+.img-item-foot{padding:5px 8px;border-top:1px solid var(--border);font-size:10px;font-family:var(--mono);color:var(--text-muted);display:flex;justify-content:space-between;align-items:center}
+
+/* ── QR result ── */
+.qr-result-box{display:flex;flex-direction:column;align-items:center;gap:16px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);margin-bottom:16px}
+#qr-canvas{border-radius:var(--r-lg);border:1px solid var(--border)}
+
+/* ── Password manager ── */
+.pw-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:12px 14px;display:flex;align-items:center;gap:12px;transition:border-color .12s;margin-bottom:6px}
+.pw-item:hover{border-color:var(--border-mid)}
+.pw-site{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pw-user{font-size:11px;color:var(--text-muted);font-family:var(--mono)}
+.pw-actions{display:flex;gap:6px;flex-shrink:0}
+.pw-btn{background:none;border:1px solid var(--border);border-radius:var(--r);padding:4px 8px;font-size:11px;cursor:pointer;font-family:var(--sans);color:var(--text-muted);transition:all .12s}
+.pw-btn:hover{border-color:var(--border-mid);color:var(--text-primary)}
+.pw-strength{height:4px;border-radius:99px;margin-top:6px;transition:all .3s}
+
+/* ── Tag ── */
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:99px;border:0.5px solid var(--border);color:var(--text-muted);background:var(--surface-2)}
+
+
+/* ── Tool switcher ── */
+.tool-switcher{display:flex;align-items:center;gap:4px;background:var(--surface2);border-radius:8px;padding:3px}
+.ts-btn{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:6px;border:none;background:none;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);color:var(--text-muted);transition:all .15s;text-decoration:none;white-space:nowrap}
+.ts-btn:hover{color:var(--text);background:var(--surface)}
+.ts-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.ts-btn svg{flex-shrink:0}
+
 </style>
 </head>
 <body>
@@ -265,7 +328,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
     </div>
     <div>
-      <div class="brand-name">PDF Toolkit</div>
+      <div class="brand-name">Browser Tools</div>
       <div class="brand-tags">
         <span class="brand-tag">local</span>
         <span class="brand-tag">·</span>
@@ -275,9 +338,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       </div>
     </div>
   </div>
-  <span class="topbar-tagline">Every tool runs entirely in your browser</span>
+  <span class="topbar-tagline">Privacy-first tools — local · open source · free</span>
   <div class="topbar-right">
-    <div class="private-pill">
+    <div class="tool-switcher">
+    <a class="ts-btn active" href="https://rech2yogesh.github.io/pdf-tools/">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      PDF Tools
+    </a>
+    <a class="ts-btn" href="https://rech2yogesh.github.io/pdf-tools/image.html">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Image Tools
+    </a>
+  </div>
+  <div class="private-pill">
       <div class="priv-dot"></div>
       100% private
     </div>
@@ -339,6 +412,47 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
     <span class="nav-label">Metadata</span>
   </button>
+
+  <div class="cat-divider"></div>
+
+  <span class="sg-label">Images</span>
+  <button class="nav-item" onclick="switchTool('img-compress',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    <span class="nav-label">Compress</span>
+  </button>
+  <button class="nav-item" onclick="switchTool('img-resize',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+    <span class="nav-label">Resize & Convert</span>
+  </button>
+  <button class="nav-item" onclick="switchTool('img-meta',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+    <span class="nav-label">Strip EXIF</span>
+  </button>
+
+  <span class="sg-label">Video & Audio</span>
+  <button class="nav-item" onclick="switchTool('video',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    <span class="nav-label">Video Tools</span><span class="nav-cat-badge">FFmpeg</span>
+  </button>
+  <button class="nav-item" onclick="switchTool('audio',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    <span class="nav-label">Audio Tools</span><span class="nav-cat-badge">FFmpeg</span>
+  </button>
+
+  <span class="sg-label">Utilities</span>
+  <button class="nav-item" onclick="switchTool('qr',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">QR Code</span>
+  </button>
+  <button class="nav-item" onclick="switchTool('passwords',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+    <span class="nav-label">Passwords</span>
+  </button>
+  <button class="nav-item" onclick="switchTool('encrypt',this)">
+    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span class="nav-label">Encrypt Files</span>
+  </button>
+
 </nav>
 
 <main class="main">
@@ -346,6 +460,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <!-- COMPRESS -->
 <div class="panel active" id="panel-compress">
   <div class="panel-hd"><h1>Compress PDF</h1><p>Reduce file size while keeping documents readable. Add several files and compress them in one pass.</p></div>
+  <div class="panel-main">
   <span class="slabel">Compression level</span>
   <div class="level-cards" style="margin-bottom:20px">
     <button class="level-card" data-quality="0.85" onclick="setLevel(this,'compress')"><div class="level-card-name">Low<div class="level-card-check">✓</div></div><div class="level-card-desc">Best quality, smaller reduction</div></button>
@@ -370,7 +485,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/><polyline points="3 11 7 7 11 11"/><polyline points="13 11 17 7 21 11"/></svg>
     <span id="btn-compress-label">Compress files</span>
   </button>
-  <div class="summary-card" id="sc-compress">
+  <div class="summary-card panel-full" id="sc-compress">
     <div class="summary-top"><div class="summary-check">✓</div><div><div class="summary-title" id="sc-compress-title">Done</div><div class="summary-sub" id="sc-compress-sub"></div></div></div>
     <div class="summary-stats">
       <div class="summary-stat"><div class="s-lbl">Original</div><div class="s-val" id="sc-compress-orig">—</div></div>
@@ -379,19 +494,50 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
     <div class="summary-acts"><button class="dl-btn" id="sc-compress-dl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download all</button><button class="reset-btn" onclick="clearQueue('compress')">Start over</button></div>
   </div>
+  </div><!-- /panel-main -->
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>How it works</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Low</strong> — Best for contracts and legal docs where text clarity is critical.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Balanced</strong> — Good for reports, presentations and general sharing.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>High</strong> — Best for scanned pages or files you're sending over email or WhatsApp.</p></div>
+      </div>
+    </div>
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Privacy</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Files are processed entirely in your browser. Nothing is uploaded to any server.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Files are cleared from memory when you close or refresh the page.</p></div>
+      </div>
+    </div>
+  </div><!-- /panel-side -->
 </div>
 
 <!-- GRAYSCALE -->
 <div class="panel" id="panel-grayscale">
   <div class="panel-hd"><h1>Convert to Grayscale</h1><p>Strip all colour from a PDF — reduces file size and saves printing costs.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-grayscale"><input type="file" id="fi-grayscale" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" opacity=".35"/></svg></div><h2>Drop a PDF to convert</h2><p>All colour pages become black &amp; white.</p><span class="dz-btn">Select file</span></div>
   <div class="progress-wrap" id="gs-progress-wrap"><div class="progress-label" id="gs-progress-label">Converting…</div><div class="progress-track"><div class="progress-fill" id="gs-progress-fill"></div></div></div>
   <div class="output-card" id="oc-grayscale"><div class="out-icon">✓</div><div class="out-info"><div class="out-title">Grayscale PDF ready</div><div class="out-sub" id="oc-grayscale-sub"></div></div><button class="out-dl-btn" id="oc-grayscale-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Lossless colour removal</strong> — Converts RGB pixel values to luminance — no quality loss beyond the JPEG render.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Smaller files</strong> — Grayscale PDFs are typically 20–40% smaller than colour equivalents.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Print savings</strong> — Eliminates accidental colour printing on B&W printers.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- MERGE -->
 <div class="panel" id="panel-merge">
   <div class="panel-hd"><h1>Merge PDFs</h1><p>Combine multiple PDFs into one. Drag rows to set the order before merging.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-merge"><input type="file" id="fi-merge" class="drop-file-input" accept=".pdf,application/pdf" multiple><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div><h2>Drop PDFs to merge</h2><p>Drag rows below to reorder before merging.</p><span class="dz-btn">Select files</span></div>
   <div class="queue-wrap" id="qs-merge">
     <div class="queue-head"><span class="slabel" style="margin:0" id="qt-merge">FILES · DRAG TO REORDER</span><div class="queue-acts"><label for="fi-merge" class="btn-sm-accent">+ Add more</label><button class="btn-sm" onclick="clearQueue('merge')">Clear all</button></div></div>
@@ -399,11 +545,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
   <button class="primary-btn" id="btn-merge" onclick="runMerge()" disabled><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>Merge into one PDF</button>
   <div class="output-card" id="oc-merge"><div class="out-icon">✓</div><div class="out-info"><div class="out-title" id="oc-merge-title">merged.pdf</div><div class="out-sub" id="oc-merge-sub"></div></div><button class="out-dl-btn" id="oc-merge-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Drag to reorder</strong> — Rows in the file list are draggable — set the exact page order before merging.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Mixed orientations</strong> — Portrait and landscape pages are each preserved at their original dimensions.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>No page limit</strong> — Merge as many files as your browser memory allows.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- SPLIT -->
 <div class="panel" id="panel-split">
   <div class="panel-hd"><h1>Split &amp; Reorder</h1><p>Delete unwanted pages or drag to rearrange the page order.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-split"><input type="file" id="fi-split" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><h2>Drop a PDF to edit</h2><p>Delete pages or drag to reorder.</p><span class="dz-btn">Select file</span></div>
   <div id="split-pages-wrap" style="display:none">
     <div class="mode-tabs"><button class="mode-tab active" id="split-tab-delete" onclick="setSplitMode('delete')">🗑 Delete pages<span class="mode-tab-hint">Click pages to mark for deletion</span></button><button class="mode-tab" id="split-tab-reorder" onclick="setSplitMode('reorder')">↕ Reorder pages<span class="mode-tab-hint">Drag pages to new positions</span></button></div>
@@ -412,11 +570,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <button class="primary-btn" id="btn-split" onclick="runSplit()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg><span id="btn-split-label">Select pages to delete</span></button>
   </div>
   <div class="output-card" id="oc-split"><div class="out-icon">✓</div><div class="out-info"><div class="out-title" id="oc-split-title">Done</div><div class="out-sub" id="oc-split-sub"></div></div><button class="out-dl-btn" id="oc-split-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Two modes</strong> — Delete mode marks pages for removal. Reorder mode lets you drag pages to new positions.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Non-destructive</strong> — The original file is never modified — a new PDF is created on download.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Visual picker</strong> — Thumbnail previews help you identify pages before deleting.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ROTATE -->
 <div class="panel" id="panel-rotate">
   <div class="panel-hd"><h1>Rotate Pages</h1><p>Fix page orientation — select individual pages or all, then rotate.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-rotate"><input type="file" id="fi-rotate" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg></div><h2>Drop a PDF to rotate</h2><p>Select pages then choose rotation direction.</p><span class="dz-btn">Select file</span></div>
   <div id="rotate-pages-wrap" style="display:none">
     <div class="toolbar"><button class="tool-btn" onclick="rotateSelectAll()">Select all</button><button class="tool-btn" onclick="applyRotate(90)">↻ 90° right</button><button class="tool-btn" onclick="applyRotate(-90)">↺ 90° left</button><button class="tool-btn" onclick="applyRotate(180)">↕ 180°</button><span class="tool-count" id="rotate-sel-count">0 selected</span></div>
@@ -424,19 +594,43 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <button class="primary-btn" onclick="runRotate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>Save rotated PDF</button>
   </div>
   <div class="output-card" id="oc-rotate"><div class="out-icon">✓</div><div class="out-info"><div class="out-title">Rotation applied</div><div class="out-sub" id="oc-rotate-sub"></div></div><button class="out-dl-btn" id="oc-rotate-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Per-page control</strong> — Select individual pages or all pages before rotating.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Any angle</strong> — Rotate 90° right, 90° left, or 180° in a single pass.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Preview</strong> — Canvas thumbnails rotate visually so you can verify before saving.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- REVERSE -->
 <div class="panel" id="panel-reverse">
   <div class="panel-hd"><h1>Reverse Page Order</h1><p>Flip the order of all pages — last page becomes first. Useful for scanners that produce reversed output.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-reverse"><input type="file" id="fi-reverse" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div><h2>Drop a PDF to reverse</h2><p>All pages will be flipped in order instantly.</p><span class="dz-btn">Select file</span></div>
   <div class="progress-wrap" id="rv-progress-wrap"><div class="progress-label" id="rv-progress-label">Reversing pages…</div><div class="progress-track"><div class="progress-fill" id="rv-progress-fill"></div></div></div>
   <div class="output-card" id="oc-reverse"><div class="out-icon">✓</div><div class="out-info"><div class="out-title">Pages reversed</div><div class="out-sub" id="oc-reverse-sub"></div></div><button class="out-dl-btn" id="oc-reverse-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Scanner fix</strong> — Many flatbed scanners produce pages in reverse order — this fixes it in one click.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Instant</strong> — No page selection needed — all pages are reversed automatically.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Preserves layout</strong> — Each page keeps its original orientation and dimensions.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- TO IMAGES -->
 <div class="panel" id="panel-toimage">
   <div class="panel-hd"><h1>PDF to Images</h1><p>Export every page as a JPG or PNG image file.</p></div>
+  <div class="panel-main">
   <span class="slabel">Format</span>
   <div class="img-format-grid" style="margin-bottom:16px">
     <button class="level-card active" data-format="jpeg" onclick="setImgFormat(this)"><div class="level-card-name">JPG<div class="level-card-check">✓</div></div><div class="level-card-desc">Smaller, best for sharing</div></button>
@@ -465,11 +659,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     </div>
     <button class="reset-btn" style="width:100%;text-align:center;margin-bottom:16px" onclick="resetToImage()">Convert another file</button>
   </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Selectable pages</strong> — Click thumbnails to select specific pages, then download just those.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>ZIP download</strong> — Download all pages as a single ZIP file to save time.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Resolution options</strong> — 72 DPI for screen/web, 150 for standard print, 300 for high-quality print.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- EXTRACT IMAGES -->
 <div class="panel" id="panel-extract">
   <div class="panel-hd"><h1>Extract Images</h1><p>Pull all embedded images out of a PDF as downloadable PNG files.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-extract"><input type="file" id="fi-extract" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><h2>Drop a PDF to extract</h2><p>All images embedded in the PDF will be extracted.</p><span class="dz-btn">Select file</span></div>
   <div class="progress-wrap" id="extract-progress-wrap"><div class="progress-label" id="extract-progress-label">Scanning pages…</div><div class="progress-track"><div class="progress-fill" id="extract-progress-fill"></div></div></div>
   <div id="extract-results-wrap" style="display:none">
@@ -481,11 +687,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="out-icon" style="background:var(--warn-dim);border-color:var(--warn-bd);color:var(--warn)">!</div>
     <div class="out-info"><div class="out-title">No embedded images found</div><div class="out-sub">This PDF may contain vector graphics or text only.</div></div>
   </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Raster images only</strong> — Extracts embedded JPEG/PNG images. Vector graphics and text are not extracted.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Per-page scan</strong> — Each page is scanned individually — images are named by page number.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>PNG output</strong> — All extracted images are saved as PNG for maximum compatibility.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- PROTECT -->
 <div class="panel" id="panel-protect">
   <div class="panel-hd"><h1>Password Protect</h1><p>Encrypt a PDF so only people with the password can open it.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-protect"><input type="file" id="fi-protect" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div><h2>Drop a PDF to protect</h2><p>Set a password before sharing.</p><span class="dz-btn">Select file</span></div>
   <div id="protect-form" style="display:none">
     <div class="form-card">
@@ -496,11 +714,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <button class="primary-btn" onclick="runProtect()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Protect PDF</button>
   </div>
   <div class="output-card" id="oc-protect"><div class="out-icon">🔒</div><div class="out-info"><div class="out-title">Password applied</div><div class="out-sub" id="oc-protect-sub"></div></div><button class="out-dl-btn" id="oc-protect-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>AES encryption</strong> — Uses jsPDF's built-in AES encryption — the industry standard for PDF security.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Share the password separately</strong> — Never send the password in the same message as the file.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Note on signatures</strong> — Password protection will invalidate any existing digital signatures.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- WATERMARK -->
 <div class="panel" id="panel-watermark">
   <div class="panel-hd"><h1>Watermark</h1><p>Stamp diagonal text on every page — CONFIDENTIAL, DRAFT, or custom.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-watermark"><input type="file" id="fi-watermark" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><h2>Drop a PDF to watermark</h2><p>Configure text and opacity after selecting.</p><span class="dz-btn">Select file</span></div>
   <div id="watermark-form" style="display:none">
     <div class="form-card">
@@ -515,11 +745,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <button class="primary-btn" onclick="runWatermark()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Apply watermark</button>
   </div>
   <div class="output-card" id="oc-watermark"><div class="out-icon">✓</div><div class="out-info"><div class="out-title">Watermark applied</div><div class="out-sub" id="oc-watermark-sub"></div></div><button class="out-dl-btn" id="oc-watermark-dl">Download</button></div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Diagonal stamp</strong> — Text is stamped diagonally across the centre of every page.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Opacity control</strong> — Light works for subtle marking; Strong ensures the watermark is clearly visible.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Colour matched</strong> — The watermark uses the tool's accent colour for a consistent look.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- METADATA -->
 <div class="panel" id="panel-metadata">
   <div class="panel-hd"><h1>Metadata Cleaner</h1><p>Strip hidden information from a PDF — author name, creation date, software — before sharing externally.</p></div>
+  <div class="panel-main">
   <div class="drop-zone" id="dz-metadata"><input type="file" id="fi-metadata" class="drop-file-input" accept=".pdf,application/pdf"><div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg></div><h2>Drop a PDF to clean</h2><p>All metadata will be stripped before download.</p><span class="dz-btn">Select file</span></div>
   <div id="metadata-results" style="display:none">
     <div class="form-card" style="margin-bottom:16px"><span class="slabel">Metadata found &amp; removed</span><div id="metadata-list" style="display:flex;flex-direction:column;gap:0"></div></div>
@@ -527,7 +769,447 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
   </div>
 </div>
 
+
+<!-- IMAGE COMPRESS -->
+<div class="panel" id="panel-img-compress">
+  <div class="panel-hd"><h1>Compress Images</h1><p>Reduce image file sizes without visible quality loss. Supports JPG, PNG, and WebP. Multiple files supported.</p></div>
+  <div class="panel-main">
+    <span class="slabel">Quality</span>
+    <div class="level-cards" style="margin-bottom:20px">
+      <button class="level-card" data-iq="0.95" onclick="setImgQ(this)"><div class="level-card-name">Low<div class="level-card-check">✓</div></div><div class="level-card-desc">Barely noticeable, 10-20% smaller</div></button>
+      <button class="level-card active" data-iq="0.80" onclick="setImgQ(this)"><div class="level-card-name">Balanced<div class="level-card-check">✓</div></div><div class="level-card-desc">Good quality, 40-60% smaller</div></button>
+      <button class="level-card" data-iq="0.60" onclick="setImgQ(this)"><div class="level-card-name">High<div class="level-card-check">✓</div></div><div class="level-card-desc">Max reduction, 60-80% smaller</div></button>
+    </div>
+    <div class="drop-zone" id="dz-img-compress">
+      <input type="file" id="fi-img-compress" class="drop-file-input" accept="image/*" multiple>
+      <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+      <h2>Drop images here</h2><p>JPG, PNG, WebP supported. Multiple files at once.</p>
+      <span class="dz-btn">Select images</span>
+    </div>
+    <div class="queue-wrap" id="qs-img-compress">
+      <div class="queue-head"><span class="slabel" style="margin:0" id="qt-img-compress">FILES</span><div class="queue-acts"><label for="fi-img-compress" class="btn-sm-accent">+ Add more</label><button class="btn-sm" onclick="imgClearQueue()">Clear all</button></div></div>
+      <div class="file-list" id="fl-img-compress"></div>
+    </div>
+    <button class="primary-btn" id="btn-img-compress" onclick="runImgCompress()" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+      <span id="btn-img-compress-label">Compress images</span>
+    </button>
+    <div class="summary-card panel-full" id="sc-img-compress">
+      <div class="summary-top"><div class="summary-check">✓</div><div><div class="summary-title" id="sc-img-title">Done</div><div class="summary-sub" id="sc-img-sub"></div></div></div>
+      <div class="summary-stats">
+        <div class="summary-stat"><div class="s-lbl">Original</div><div class="s-val" id="sc-img-orig">—</div></div>
+        <div class="summary-stat"><div class="s-lbl">Compressed</div><div class="s-val" id="sc-img-comp">—</div></div>
+        <div class="summary-stat"><div class="s-lbl">Saved</div><div class="s-val pos" id="sc-img-saved">—</div></div>
+      </div>
+      <div class="summary-acts"><button class="dl-btn" id="sc-img-dl">↓ Download all</button><button class="reset-btn" onclick="imgClearQueue()">Start over</button></div>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>JPG</strong> — Best for photos. Already lossy so high compression has minimal impact.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>PNG</strong> — Lossless format. Compressing converts to JPG — avoid for logos with transparency.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>WebP</strong> — Modern format. Balanced quality gives excellent results.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE RESIZE & CONVERT -->
+<div class="panel" id="panel-img-resize">
+  <div class="panel-hd"><h1>Resize &amp; Convert</h1><p>Resize images to exact dimensions or percentage, and convert between JPG, PNG and WebP formats.</p></div>
+  <div class="panel-main">
+    <div class="drop-zone" id="dz-img-resize">
+      <input type="file" id="fi-img-resize" class="drop-file-input" accept="image/*" multiple>
+      <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
+      <h2>Drop images to resize</h2><p>Multiple files supported.</p>
+      <span class="dz-btn">Select images</span>
+    </div>
+    <div id="resize-options" style="display:none">
+      <div class="form-card" style="margin-bottom:16px">
+        <div id="resize-file-bar" style="margin-bottom:14px"></div>
+        <div class="form-row" style="margin-bottom:14px">
+          <div class="form-group"><label class="form-label">Width (px)</label><input type="number" class="form-input" id="resize-w" placeholder="e.g. 1920"></div>
+          <div class="form-group"><label class="form-label">Height (px)</label><input type="number" class="form-input" id="resize-h" placeholder="e.g. 1080"></div>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Or resize by percentage</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="range" id="resize-pct-slider" min="10" max="200" value="100" oninput="document.getElementById('resize-pct-val').textContent=this.value+'%'" style="flex:1">
+            <span id="resize-pct-val" style="font-size:13px;font-family:var(--mono);color:var(--text-primary);min-width:40px">100%</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Output format</label>
+            <select class="form-select" id="resize-fmt"><option value="jpeg">JPG</option><option value="png">PNG</option><option value="webp">WebP</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Quality</label>
+            <select class="form-select" id="resize-quality"><option value="0.95">High (95%)</option><option value="0.85" selected>Medium (85%)</option><option value="0.70">Low (70%)</option></select>
+          </div>
+        </div>
+      </div>
+      <button class="primary-btn" onclick="runResize()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/></svg>
+        Resize &amp; convert
+      </button>
+    </div>
+    <div id="resize-results-wrap" style="display:none">
+      <div class="img-tool-grid" id="resize-grid"></div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="dl-btn" onclick="dlAllResized()">↓ Download all</button>
+        <button class="reset-btn" onclick="resetResize()">Resize more</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Leave Width or Height blank to maintain aspect ratio.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>WebP</strong> is 25-35% smaller than JPG at the same quality — ideal for web use.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Use percentage slider for quick batch resizing without knowing exact dimensions.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IMAGE EXIF STRIP -->
+<div class="panel" id="panel-img-meta">
+  <div class="panel-hd"><h1>Strip EXIF Metadata</h1><p>Remove hidden data from images — GPS location, camera model, date taken, and more — before sharing online.</p></div>
+  <div class="panel-main">
+    <div class="drop-zone" id="dz-img-meta">
+      <input type="file" id="fi-img-meta" class="drop-file-input" accept="image/*" multiple>
+      <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+      <h2>Drop images to clean</h2><p>All EXIF metadata will be stripped before download.</p>
+      <span class="dz-btn">Select images</span>
+    </div>
+    <div id="exif-results" style="display:none">
+      <div class="form-card" style="margin-bottom:16px">
+        <span class="slabel">Metadata removed</span>
+        <div id="exif-list" style="display:flex;flex-direction:column;gap:0"></div>
+      </div>
+      <button class="primary-btn" id="btn-exif-dl">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download cleaned image
+      </button>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>What gets removed</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>GPS coordinates</strong> — exact location where the photo was taken.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Device info</strong> — camera brand, model, serial number, lens details.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Timestamps</strong> — date and time the photo was captured.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Software</strong> — editing tools used (Photoshop, Lightroom etc.).</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- VIDEO TOOLS -->
+<div class="panel" id="panel-video">
+  <div class="panel-hd"><h1>Video Tools</h1><p>Compress, convert, trim and extract audio from video files. Powered by FFmpeg — runs entirely in your browser.</p></div>
+  <div class="panel-main">
+    <div class="progress-wrap" id="ffmpeg-load-wrap" style="display:none">
+      <div class="progress-label" id="ffmpeg-load-label">Loading FFmpeg (first time only, ~25MB)…</div>
+      <div class="progress-track"><div class="progress-fill" id="ffmpeg-load-fill"></div></div>
+    </div>
+    <span class="slabel">Operation</span>
+    <div class="level-cards" style="margin-bottom:20px">
+      <button class="level-card active" data-vop="compress" onclick="setVideoOp(this)"><div class="level-card-name">Compress<div class="level-card-check">✓</div></div><div class="level-card-desc">Reduce MP4 file size</div></button>
+      <button class="level-card" data-vop="convert" onclick="setVideoOp(this)"><div class="level-card-name">Convert<div class="level-card-check">✓</div></div><div class="level-card-desc">MP4 ↔ WebM ↔ MOV</div></button>
+      <button class="level-card" data-vop="audio" onclick="setVideoOp(this)"><div class="level-card-name">Extract audio<div class="level-card-check">✓</div></div><div class="level-card-desc">Save as MP3 or AAC</div></button>
+    </div>
+    <div id="video-convert-opts" style="display:none;margin-bottom:16px">
+      <div class="form-group"><label class="form-label">Output format</label>
+        <select class="form-select" id="video-fmt"><option value="mp4">MP4</option><option value="webm">WebM</option><option value="mov">MOV</option><option value="avi">AVI</option></select>
+      </div>
+    </div>
+    <div id="video-audio-opts" style="display:none;margin-bottom:16px">
+      <div class="form-group"><label class="form-label">Audio format</label>
+        <select class="form-select" id="audio-fmt"><option value="mp3">MP3</option><option value="aac">AAC</option><option value="wav">WAV</option></select>
+      </div>
+    </div>
+    <div class="drop-zone" id="dz-video">
+      <input type="file" id="fi-video" class="drop-file-input" accept="video/*">
+      <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></div>
+      <h2>Drop a video file</h2><p>MP4, WebM, MOV, AVI supported.</p>
+      <span class="dz-btn">Select video</span>
+    </div>
+    <div class="progress-wrap" id="video-progress-wrap">
+      <div class="progress-label" id="video-progress-label">Processing…</div>
+      <div class="progress-track"><div class="progress-fill" id="video-progress-fill"></div></div>
+    </div>
+    <div class="output-card" id="oc-video">
+      <div class="out-icon">✓</div>
+      <div class="out-info"><div class="out-title" id="oc-video-title">Done</div><div class="out-sub" id="oc-video-sub"></div></div>
+      <button class="out-dl-btn" id="oc-video-dl">Download</button>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>First load is slow</strong> — FFmpeg (~25MB) downloads once and is cached for future sessions.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Large files</strong> — Processing happens in a background thread. Page stays responsive.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>WebM</strong> is ideal for web sharing — smaller than MP4 at the same quality.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIO TOOLS -->
+<div class="panel" id="panel-audio">
+  <div class="panel-hd"><h1>Audio Tools</h1><p>Convert, compress and extract audio from files. Supports MP3, AAC, WAV, OGG and more.</p></div>
+  <div class="panel-main">
+    <span class="slabel">Operation</span>
+    <div class="level-cards" style="margin-bottom:20px">
+      <button class="level-card active" data-aop="convert" onclick="setAudioOp(this)"><div class="level-card-name">Convert<div class="level-card-check">✓</div></div><div class="level-card-desc">Change audio format</div></button>
+      <button class="level-card" data-aop="compress" onclick="setAudioOp(this)"><div class="level-card-name">Compress<div class="level-card-check">✓</div></div><div class="level-card-desc">Reduce file size</div></button>
+      <button class="level-card" data-aop="trim" onclick="setAudioOp(this)"><div class="level-card-name">Trim<div class="level-card-check">✓</div></div><div class="level-card-desc">Cut start and end</div></button>
+    </div>
+    <div id="audio-convert-opts" style="margin-bottom:16px">
+      <div class="form-group"><label class="form-label">Output format</label>
+        <select class="form-select" id="audio-out-fmt"><option value="mp3">MP3</option><option value="aac">AAC</option><option value="wav">WAV</option><option value="ogg">OGG</option></select>
+      </div>
+    </div>
+    <div id="audio-trim-opts" style="display:none;margin-bottom:16px">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Start (seconds)</label><input type="number" class="form-input" id="audio-trim-start" value="0" min="0"></div>
+        <div class="form-group"><label class="form-label">End (seconds)</label><input type="number" class="form-input" id="audio-trim-end" placeholder="e.g. 30"></div>
+      </div>
+    </div>
+    <div class="drop-zone" id="dz-audio">
+      <input type="file" id="fi-audio" class="drop-file-input" accept="audio/*,video/*">
+      <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+      <h2>Drop an audio file</h2><p>MP3, WAV, AAC, OGG, M4A supported.</p>
+      <span class="dz-btn">Select file</span>
+    </div>
+    <div class="progress-wrap" id="audio-progress-wrap">
+      <div class="progress-label" id="audio-progress-label">Processing…</div>
+      <div class="progress-track"><div class="progress-fill" id="audio-progress-fill"></div></div>
+    </div>
+    <div class="output-card" id="oc-audio">
+      <div class="out-icon">✓</div>
+      <div class="out-info"><div class="out-title" id="oc-audio-title">Done</div><div class="out-sub" id="oc-audio-sub"></div></div>
+      <button class="out-dl-btn" id="oc-audio-dl">Download</button>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>MP3</strong> — Universal compatibility. Best for music and podcasts.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>AAC</strong> — Better quality than MP3 at same size. Default on Apple devices.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>WAV</strong> — Uncompressed. Large files but lossless — use for editing masters.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QR CODE -->
+<div class="panel" id="panel-qr">
+  <div class="panel-hd"><h1>QR Code Generator</h1><p>Generate QR codes for URLs, text, WiFi, contact cards and more. Fully offline — nothing is sent to any server.</p></div>
+  <div class="panel-main">
+    <div class="form-card" style="margin-bottom:16px">
+      <div class="form-group">
+        <label class="form-label">Type</label>
+        <select class="form-select" id="qr-type" onchange="updateQrPlaceholder()">
+          <option value="url">URL / Website</option>
+          <option value="text">Plain text</option>
+          <option value="email">Email address</option>
+          <option value="phone">Phone number</option>
+          <option value="wifi">WiFi network</option>
+          <option value="vcard">Contact card (vCard)</option>
+        </select>
+      </div>
+      <div id="qr-url-fields">
+        <div class="form-group"><label class="form-label">URL</label><input type="text" class="form-input" id="qr-url" placeholder="https://example.com" oninput="generateQR()"></div>
+      </div>
+      <div id="qr-text-fields" style="display:none">
+        <div class="form-group"><label class="form-label">Text</label><textarea class="form-input" id="qr-text-val" rows="3" placeholder="Enter any text…" oninput="generateQR()" style="resize:vertical"></textarea></div>
+      </div>
+      <div id="qr-email-fields" style="display:none">
+        <div class="form-group"><label class="form-label">Email address</label><input type="email" class="form-input" id="qr-email" placeholder="name@example.com" oninput="generateQR()"></div>
+      </div>
+      <div id="qr-phone-fields" style="display:none">
+        <div class="form-group"><label class="form-label">Phone number</label><input type="tel" class="form-input" id="qr-phone" placeholder="+91 98765 43210" oninput="generateQR()"></div>
+      </div>
+      <div id="qr-wifi-fields" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Network name (SSID)</label><input type="text" class="form-input" id="qr-wifi-ssid" placeholder="MyWiFi" oninput="generateQR()"></div>
+          <div class="form-group"><label class="form-label">Password</label><input type="text" class="form-input" id="qr-wifi-pass" placeholder="password" oninput="generateQR()"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Security</label>
+          <select class="form-select" id="qr-wifi-sec" onchange="generateQR()"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">None</option></select>
+        </div>
+      </div>
+      <div id="qr-vcard-fields" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Full name</label><input type="text" class="form-input" id="qr-vc-name" placeholder="John Smith" oninput="generateQR()"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="text" class="form-input" id="qr-vc-phone" placeholder="+91 98765 43210" oninput="generateQR()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="qr-vc-email" placeholder="name@example.com" oninput="generateQR()"></div>
+          <div class="form-group"><label class="form-label">Company</label><input type="text" class="form-input" id="qr-vc-org" placeholder="Acme Inc." oninput="generateQR()"></div>
+        </div>
+      </div>
+      <div class="form-row" style="margin-top:4px">
+        <div class="form-group"><label class="form-label">Size (px)</label>
+          <select class="form-select" id="qr-size" onchange="generateQR()"><option value="200">200</option><option value="300" selected>300</option><option value="400">400</option><option value="512">512</option></select>
+        </div>
+        <div class="form-group"><label class="form-label">Error correction</label>
+          <select class="form-select" id="qr-ec" onchange="generateQR()"><option value="L">Low (7%)</option><option value="M" selected>Medium (15%)</option><option value="Q">Quartile (25%)</option><option value="H">High (30%)</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="qr-result-box" id="qr-result-box" style="display:none">
+      <canvas id="qr-canvas"></canvas>
+      <div style="display:flex;gap:8px">
+        <button class="dl-btn" onclick="dlQR('png')">↓ Download PNG</button>
+        <button class="reset-btn" onclick="dlQR('svg')">↓ Download SVG</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Higher error correction</strong> lets the QR still scan even if partially damaged or covered by a logo.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>WiFi QR</strong> — guests scan and connect automatically, no password typing needed.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>vCard QR</strong> — scanning saves the contact directly to the phone's address book.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Download as PNG for print, SVG for web (scales without pixelation).</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORDS -->
+<div class="panel" id="panel-passwords">
+  <div class="panel-hd"><h1>Password Manager</h1><p>Store passwords encrypted in a local file on your device. Nothing is synced or uploaded — ever.</p></div>
+  <div class="panel-main">
+    <div id="pw-locked-view">
+      <div class="form-card" style="margin-bottom:16px">
+        <div class="form-group"><label class="form-label">Master password</label><input type="password" class="form-input" id="pw-master" placeholder="Enter master password"></div>
+        <div class="form-group" style="margin-bottom:0"><label class="form-label">Vault file (optional — leave blank to create new)</label>
+          <input type="file" id="pw-vault-file" accept=".vault,.json" style="font-size:13px;color:var(--text-muted)">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="primary-btn" style="margin:0" onclick="pwUnlock()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Unlock vault</button>
+      </div>
+    </div>
+    <div id="pw-unlocked-view" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <span class="slabel" style="margin:0" id="pw-count-label">PASSWORDS</span>
+        <div style="display:flex;gap:6px">
+          <button class="btn-sm-accent" onclick="pwShowAdd()">+ Add</button>
+          <button class="btn-sm" onclick="pwExport()">↓ Export</button>
+          <button class="btn-sm" onclick="pwLock()">Lock</button>
+        </div>
+      </div>
+      <div class="form-input" style="margin-bottom:10px;display:flex;align-items:center;gap:8px;padding:8px 12px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="pw-search" placeholder="Search passwords…" oninput="pwRender()" style="border:none;background:none;outline:none;width:100%;font-size:13px;font-family:var(--sans);color:var(--text-primary)">
+      </div>
+      <div id="pw-list"></div>
+      <div id="pw-add-form" style="display:none">
+        <div class="form-card" style="margin-bottom:12px">
+          <div class="form-group"><label class="form-label">Site / App</label><input type="text" class="form-input" id="pw-add-site" placeholder="e.g. Google, Netflix"></div>
+          <div class="form-group"><label class="form-label">Username / Email</label><input type="text" class="form-input" id="pw-add-user" placeholder="user@example.com"></div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div style="display:flex;gap:6px">
+              <input type="text" class="form-input" id="pw-add-pass" placeholder="Enter or generate" oninput="checkPwStrength()">
+              <button class="btn-sm" onclick="genPassword()" style="white-space:nowrap">Generate</button>
+            </div>
+            <div class="pw-strength" id="pw-strength-bar"></div>
+            <div class="form-hint" id="pw-strength-label"></div>
+          </div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Notes</label><textarea class="form-input" id="pw-add-notes" rows="2" placeholder="Optional notes…" style="resize:none"></textarea></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <button class="primary-btn" style="margin:0" onclick="pwSave()">Save password</button>
+          <button class="reset-btn" onclick="pwHideAdd()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Security</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Vault is encrypted with <strong>AES-GCM 256-bit</strong> using the Web Crypto API — the same standard used by banks.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>The master password never leaves your browser. It is used locally to derive the encryption key.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Export your vault file and back it up to a USB drive or cloud storage for safekeeping.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Do not forget</strong> your master password — there is no recovery option.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ENCRYPT FILES -->
+<div class="panel" id="panel-encrypt">
+  <div class="panel-hd"><h1>Encrypt Files</h1><p>Encrypt any file with a password before sharing. The recipient needs the password to decrypt it. Uses AES-GCM 256-bit encryption.</p></div>
+  <div class="panel-main">
+    <div class="mode-tabs" style="margin-bottom:20px">
+      <button class="mode-tab active" id="enc-tab-encrypt" onclick="setEncMode('encrypt')">🔒 Encrypt file<span class="mode-tab-hint">Protect a file with a password</span></button>
+      <button class="mode-tab" id="enc-tab-decrypt" onclick="setEncMode('decrypt')">🔓 Decrypt file<span class="mode-tab-hint">Unlock an encrypted file</span></button>
+    </div>
+    <div id="enc-encrypt-wrap">
+      <div class="drop-zone" id="dz-encrypt">
+        <input type="file" id="fi-encrypt" class="drop-file-input">
+        <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <h2>Drop any file to encrypt</h2><p>PDF, image, document — any file type.</p>
+        <span class="dz-btn">Select file</span>
+      </div>
+      <div id="enc-form" style="display:none">
+        <div class="form-card" style="margin-bottom:16px">
+          <div id="enc-file-bar" style="margin-bottom:14px"></div>
+          <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="enc-pass1" placeholder="Enter a strong password"></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Confirm password</label><input type="password" class="form-input" id="enc-pass2" placeholder="Repeat the password">
+          <div class="form-hint">Share the password separately from the encrypted file.</div></div>
+        </div>
+        <button class="primary-btn" onclick="runEncrypt()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Encrypt file</button>
+      </div>
+      <div class="output-card" id="oc-encrypt"><div class="out-icon">🔒</div><div class="out-info"><div class="out-title">File encrypted</div><div class="out-sub" id="oc-encrypt-sub"></div></div><button class="out-dl-btn" id="oc-encrypt-dl">Download</button></div>
+    </div>
+    <div id="enc-decrypt-wrap" style="display:none">
+      <div class="drop-zone" id="dz-decrypt">
+        <input type="file" id="fi-decrypt" class="drop-file-input">
+        <div class="dz-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 7.75-4.75"/></svg></div>
+        <h2>Drop an encrypted file</h2><p>Files ending in .enc created by this tool.</p>
+        <span class="dz-btn">Select file</span>
+      </div>
+      <div id="dec-form" style="display:none">
+        <div class="form-card" style="margin-bottom:16px">
+          <div id="dec-file-bar" style="margin-bottom:14px"></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Password</label><input type="password" class="form-input" id="dec-pass" placeholder="Enter the decryption password"></div>
+        </div>
+        <button class="primary-btn" onclick="runDecrypt()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 7.75-4.75"/></svg>Decrypt file</button>
+      </div>
+      <div class="output-card" id="oc-decrypt"><div class="out-icon">🔓</div><div class="out-info"><div class="out-title">File decrypted</div><div class="out-sub" id="oc-decrypt-sub"></div></div><button class="out-dl-btn" id="oc-decrypt-dl">Download</button></div>
+    </div>
+  </div>
+  <div class="panel-side">
+    <div class="side-card"><div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>How it works</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>AES-GCM 256-bit</strong> — military-grade encryption via the browser's built-in Web Crypto API.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Encrypted files are saved as <strong>.enc</strong> — only this tool (or compatible AES-GCM tools) can decrypt them.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>The password is never stored anywhere. Lose it and the file cannot be recovered.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p>Works with any file type — PDF, image, spreadsheet, archive, anything.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </main>
+  </div>
+  <div class="panel-side">
+    <div class="side-card">
+      <div class="side-card-title"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>Tips</div>
+      <div class="side-card-list">
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>What gets removed</strong> — Author name, creation date, modification date, software name, and company field.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Why it matters</strong> — Recipients can view metadata in Adobe Acrobat or Chrome — strip it before external sharing.</p></div>
+        <div class="side-tip"><div class="side-tip-dot"></div><p><strong>Re-rendered</strong> — The cleaned PDF is fully re-rendered, not just patched, ensuring no hidden data remains.</p></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Footer -->
