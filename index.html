@@ -210,8 +210,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
     <div class="brand-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
     <span class="brand-name">PDF <span>Toolkit</span></span>
   </div>
-  <div class="topbar-sep"></div>
-  <span class="topbar-sub">Browser-based · No upload</span>
+  
   <div class="tool-switcher">
     <a class="ts-btn active" href="https://rech2yogesh.github.io/pdf-tools/">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -776,5 +775,11 @@ singleDrop('metadata',async f=>{
 setupFileInput('fi-compress','compress');
 setupFileInput('fi-merge','merge');
 </script>
+
+<!-- Floating About button -->
+<a href="https://rech2yogesh.github.io/about/" style="position:fixed;bottom:72px;right:24px;z-index:999;display:flex;align-items:center;gap:7px;padding:10px 18px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;font-family:var(--sans);text-decoration:none;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  About &amp; Services
+</a>
 </body>
 </html>
