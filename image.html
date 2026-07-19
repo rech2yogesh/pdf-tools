@@ -274,7 +274,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 
 <!-- RESIZE -->
 <div class="panel" id="panel-resize">
-  <div class="ph"><h1>Resize Image</h1><p>Resize by pixels, percentage, or choose a standard print size in inches.</p></div>
+  <div class="ph"><h1>Resize Image</h1><p>Resize by pixels or choose a standard print size in inches.</p></div>
   <div class="dz" id="dz-resize"><input type="file" id="fi-resize" class="dfi" accept="image/*">
     <div class="dz-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></div>
     <h2>Drop an image to resize</h2><p>JPG, PNG, WebP, GIF supported.</p><span class="dz-btn">Select image</span></div>
@@ -284,9 +284,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
       <div id="resize-info" style="font-size:11px;font-family:var(--mono);color:var(--text-muted);margin-bottom:14px"></div>
 
       <!-- Mode tabs -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px">
         <button class="resize-mode-btn active" data-mode="pixels" onclick="setResizeMode(this)">Pixels</button>
-        <button class="resize-mode-btn" data-mode="percent" onclick="setResizeMode(this)">Percentage</button>
         <button class="resize-mode-btn" data-mode="print" onclick="setResizeMode(this)">Print Size</button>
       </div>
 
@@ -657,7 +656,7 @@ function setResizeMode(btn){
   document.querySelectorAll('.resize-mode-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('resize-mode-pixels').style.display=resizeMode==='pixels'?'':'none';
-  document.getElementById('resize-mode-percent').style.display=resizeMode==='percent'?'':'none';
+  document.getElementById('resize-mode-percent').style.display='none';
   document.getElementById('resize-mode-print').style.display=resizeMode==='print'?'':'none';
 }
 
