@@ -623,93 +623,82 @@ async function renderDelThumbs(){
   }
 }
 async function renderRoThumbs(){
-  const g=document.getElementById('reorder-thumbs');g.innerHTML='';
-  let dragSrcIdx=null;
-
-  // Helper — clear all indicators
-  function clearIndicators(){
-    g.querySelectorAll('.ti,.ro-drop-zone').forEach(t=>{
-      t.style.borderLeft='';t.style.borderRight='';t.style.background='';t.classList.remove('drag-target');
-    });
-  }
-
-  // Helper — do the insert
-  function doInsert(from,insertAt){
-    if(from===insertAt||from===insertAt-1)return;
-    const moved=splitOrder.splice(from,1)[0];
-    if(from<insertAt)insertAt--;
-    splitOrder.splice(insertAt,0,moved);
-    renderRoThumbs();
-  }
-
-  // Leading drop zone (before first page)
-  const leadZone=document.createElement('div');
-  leadZone.className='ro-drop-zone';
-  leadZone.style.cssText='width:18px;border-radius:4px;cursor:default;transition:background .12s;flex-shrink:0';
-  leadZone.addEventListener('dragover',e=>{e.preventDefault();clearIndicators();leadZone.style.background='var(--accent)';leadZone.style.opacity='.5';});
-  leadZone.addEventListener('dragleave',()=>clearIndicators());
-  leadZone.addEventListener('drop',e=>{e.preventDefault();clearIndicators();const from=parseInt(e.dataTransfer.getData('text/plain'));doInsert(from,0);});
-  g.appendChild(leadZone);
+  const g=document.getElementById('reorder-thumbs');
+  g.innerHTML='';
+  // Reset grid style
+  g.style.display='';g.style.flexWrap='';g.style.gap='';g.style.alignItems='';
 
   for(let idx=0;idx<splitOrder.length;idx++){
     const pgNum=splitOrder[idx];
     const page=await splitDoc.getPage(pgNum);
     const vp=page.getViewport({scale:.35});
-    const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;cv.className='tc';
+    const cv=document.createElement('canvas');
+    cv.width=vp.width;cv.height=vp.height;cv.className='tc';
     await page.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
 
     const item=document.createElement('div');
-    item.className='ti';item.dataset.idx=idx;item.dataset.page=pgNum;item.draggable=true;
-    item.style.cssText='position:relative;transition:transform .15s,opacity .15s';
-    const lbl=document.createElement('div');lbl.className='tl';lbl.textContent='P'+pgNum;
-    item.appendChild(cv);item.appendChild(lbl);
+    item.className='ti';
+    item.dataset.idx=idx;
+    item.dataset.page=pgNum;
+    item.draggable=true;
+
+    const lbl=document.createElement('div');
+    lbl.className='tl';
+    lbl.textContent='P'+pgNum;
+    item.appendChild(cv);
+    item.appendChild(lbl);
 
     (function(ci){
       item.addEventListener('dragstart',e=>{
-        dragSrcIdx=ci;
         e.dataTransfer.effectAllowed='move';
         e.dataTransfer.setData('text/plain',String(ci));
-        setTimeout(()=>{item.style.opacity='.3';},0);
+        item.classList.add('drag-src');
       });
       item.addEventListener('dragend',()=>{
-        dragSrcIdx=null;item.style.opacity='1';clearIndicators();
+        item.classList.remove('drag-src');
+        g.querySelectorAll('.ti').forEach(t=>{
+          t.classList.remove('drag-target');
+          t.style.borderLeft='';
+          t.style.borderRight='';
+        });
       });
       item.addEventListener('dragover',e=>{
-        e.preventDefault();clearIndicators();
-        // Use 30% / 70% zones — larger left zone makes first position easier
+        e.preventDefault();
+        g.querySelectorAll('.ti').forEach(t=>{
+          t.classList.remove('drag-target');
+          t.style.borderLeft='';
+          t.style.borderRight='';
+        });
         const rect=item.getBoundingClientRect();
-        const threshold=rect.left+rect.width*0.35;
-        if(e.clientX<threshold){
+        // Left 40% = insert before, right 60% = insert after
+        if(e.clientX < rect.left + rect.width * 0.4){
           item.style.borderLeft='3px solid var(--accent)';
-        }else{
+        } else {
           item.style.borderRight='3px solid var(--accent)';
         }
+        item.classList.add('drag-target');
       });
       item.addEventListener('drop',e=>{
-        e.preventDefault();clearIndicators();
+        e.preventDefault();
+        g.querySelectorAll('.ti').forEach(t=>{
+          t.classList.remove('drag-target');
+          t.style.borderLeft='';
+          t.style.borderRight='';
+        });
         const from=parseInt(e.dataTransfer.getData('text/plain'));
+        if(from===ci)return;
         const rect=item.getBoundingClientRect();
-        const insertAt=e.clientX<rect.left+rect.width*0.35?ci:ci+1;
-        doInsert(from,insertAt);
+        let insertAt=e.clientX < rect.left+rect.width*0.4 ? ci : ci+1;
+        // Slide: remove from old position, insert at new
+        const moved=splitOrder.splice(from,1)[0];
+        if(from<insertAt) insertAt--;
+        splitOrder.splice(insertAt,0,moved);
+        renderRoThumbs();
       });
     })(idx);
 
     g.appendChild(item);
-
-    // Trailing drop zone after each page
-    const zone=document.createElement('div');
-    zone.className='ro-drop-zone';
-    zone.style.cssText='width:18px;border-radius:4px;cursor:default;transition:background .12s;flex-shrink:0';
-    const afterIdx=idx+1;
-    zone.addEventListener('dragover',e=>{e.preventDefault();clearIndicators();zone.style.background='var(--accent)';zone.style.opacity='.5';});
-    zone.addEventListener('dragleave',()=>clearIndicators());
-    zone.addEventListener('drop',e=>{e.preventDefault();clearIndicators();const from=parseInt(e.dataTransfer.getData('text/plain'));doInsert(from,afterIdx);});
-    g.appendChild(zone);
   }
-
-  // Make the thumb grid flex so zones sit between thumbs
-  g.style.display='flex';g.style.flexWrap='wrap';g.style.gap='4px';g.style.alignItems='flex-start';
-
   updateSplitBtn();
 }
 function splitSelAll(){for(let i=1;i<=splitDoc.numPages;i++)splitSel.add(i);document.querySelectorAll('#split-thumbs .ti').forEach(el=>el.classList.add('to-delete'));updateSplitBtn();}
