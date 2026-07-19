@@ -244,22 +244,22 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <nav class="sidebar">
   <span class="sg">Optimise</span>
   <button class="ni active" onclick="sw('compress',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="8 17 12 21 16 17"/><line x1="12" y1="3" x2="12" y2="21"/><polyline points="3 11 7 7 11 11"/><polyline points="13 11 17 7 21 11"/></svg>Compress<span class="nb">multi</span></button>
-  <button class="ni" onclick="sw('grayscale',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" opacity=".3"/></svg>Grayscale</button>
+  <button class="ni" data-tool="grayscale" onclick="sw('grayscale',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 0 20" fill="currentColor" opacity=".3"/></svg>Grayscale</button>
 
   <span class="sg">Organise</span>
-  <button class="ni" onclick="sw('merge',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Merge<span class="nb">multi</span></button>
-  <button class="ni" onclick="sw('split',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/><line x1="4" y1="19" x2="20" y2="19"/></svg>Split &amp; Reorder</button>
-  <button class="ni" onclick="sw('rotate',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Rotate</button>
-  <button class="ni" onclick="sw('reverse',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Reverse</button>
+  <button class="ni" data-tool="merge" onclick="sw('merge',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Merge<span class="nb">multi</span></button>
+  <button class="ni" data-tool="split" onclick="sw('split',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="5 12 12 5 19 12"/><line x1="4" y1="19" x2="20" y2="19"/></svg>Split &amp; Reorder</button>
+  <button class="ni" data-tool="rotate" onclick="sw('rotate',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>Rotate</button>
+  <button class="ni" data-tool="reverse" onclick="sw('reverse',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>Reverse</button>
 
   <span class="sg">Convert</span>
-  <button class="ni" onclick="sw('toimage',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>PDF to Images</button>
-  <button class="ni" onclick="sw('extract',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Extract Images</button>
+  <button class="ni" data-tool="toimage" onclick="sw('toimage',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>PDF to Images</button>
+  <button class="ni" data-tool="extract" onclick="sw('extract',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>Extract Images</button>
 
   <span class="sg">Security</span>
-  <button class="ni" onclick="sw('protect',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Protect</button>
-  <button class="ni" onclick="sw('watermark',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>Watermark</button>
-  <button class="ni" onclick="sw('metadata',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>Metadata</button>
+  <button class="ni" data-tool="protect" onclick="sw('protect',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Protect</button>
+  <button class="ni" data-tool="watermark" onclick="sw('watermark',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>Watermark</button>
+  <button class="ni" data-tool="metadata" onclick="sw('metadata',this)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>Metadata</button>
 </nav>
 
 <main class="main">
@@ -891,19 +891,33 @@ setupFileInput('fi-merge','merge');
   <button class="mob-ni" onclick="swMob('watermark',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Watermark</button>
   <button class="mob-ni" onclick="swMob('metadata',this)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Metadata</button>
 </div>
+
+
+
 <script>
-function openMobMenu(){document.getElementById('mob-overlay').style.display='block';document.getElementById('mob-drawer').classList.add('open');}
-function closeMobMenu(){document.getElementById('mob-overlay').style.display='none';document.getElementById('mob-drawer').classList.remove('open');}
-function swMob(tool,btn){
-  var sideBtn=document.querySelector('.ni[onclick*="sw(\'"+tool+"\'"]');
-  if(sideBtn) sw(tool,sideBtn); else sw(tool,btn);
-  document.querySelectorAll('.mob-ni').forEach(function(b){b.classList.remove('active');});
+function openMobMenu(){
+  document.getElementById('mob-overlay').style.display='block';
+  document.getElementById('mob-drawer').classList.add('open');
+}
+function closeMobMenu(){
+  document.getElementById('mob-overlay').style.display='none';
+  document.getElementById('mob-drawer').classList.remove('open');
+}
+function swMob(tool, btn){
+  // Switch the panel
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  var panel = document.getElementById('panel-' + tool);
+  if(panel) panel.classList.add('active');
+  // Update sidebar highlight
+  document.querySelectorAll('.ni').forEach(function(b){ b.classList.remove('active'); });
+  var sideBtn = document.querySelector('.ni[data-tool="' + tool + '"]');
+  if(sideBtn) sideBtn.classList.add('active');
+  // Update drawer highlight
+  document.querySelectorAll('.mob-ni').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
   closeMobMenu();
-  window.scrollTo({top:0,behavior:'smooth'});
-});
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 </script>
-
 </body>
 </html>
