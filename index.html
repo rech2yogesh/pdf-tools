@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://rech2yogesh.github.io/pdf-tools/">
+<meta property="og:title" content="Free PDF & Image Toolkit">
+<meta property="og:description" content="Privacy-first browser tools — compress, merge, redact, convert and more. No upload, no account, 100% free.">
+<meta property="og:image" content="https://rech2yogesh.github.io/pdf-tools/preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://rech2yogesh.github.io/pdf-tools/preview.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Toolkit</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -508,8 +515,14 @@ function singleDrop(tool,cb){
 const cQ={compress:{queue:[],quality:0.60,nextId:0,running:false},merge:{queue:[],nextId:0,running:false}};
 
 function setLv(btn,tool){document.querySelectorAll('#panel-'+tool+' .lc').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(cQ[tool])cQ[tool].quality=parseFloat(btn.dataset.quality);}
-function setImgFmt(btn){document.querySelectorAll('#panel-toimage .lc-grid:first-of-type .lc').forEach(b=>b.classList.remove('active'));btn.classList.add('active');imgFmt=btn.dataset.format;}
-function setImgSc(btn){document.querySelectorAll('#panel-toimage .lc-grid:last-of-type .lc').forEach(b=>b.classList.remove('active'));btn.classList.add('active');imgScale=parseFloat(btn.dataset.scale);}
+function setImgFmt(btn){
+  btn.closest('.lc-grid').querySelectorAll('.lc').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');imgFmt=btn.dataset.format;
+}
+function setImgSc(btn){
+  btn.closest('.lc-grid').querySelectorAll('.lc').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');imgScale=parseFloat(btn.dataset.scale);
+}
 
 function setupFileInput(id,tool){
   document.getElementById(id).addEventListener('change',e=>{addQ([...e.target.files],tool);e.target.value='';});
