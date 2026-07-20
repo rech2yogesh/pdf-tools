@@ -261,13 +261,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:1
 <!-- COMPRESS -->
 <div class="panel active" id="panel-compress">
   <div class="ph"><h1>Compress Images</h1><p>Reduce image file sizes without visible quality loss. Supports JPG, PNG and WebP. Multiple files at once.</p></div>
-  <span class="slabel">Quality</span>
-  <div class="lc-grid">
-    <button class="lc" data-q="0.95" onclick="setQ(this)"><div class="lc-name">Low<div class="lc-check">✓</div></div><div class="lc-desc">Barely noticeable</div></button>
-    <button class="lc active" data-q="0.80" onclick="setQ(this)"><div class="lc-name">Balanced<div class="lc-check">✓</div></div><div class="lc-desc">Good quality, 40-60% smaller</div></button>
-    <button class="lc" data-q="0.60" onclick="setQ(this)"><div class="lc-name">High<div class="lc-check">✓</div></div><div class="lc-desc">Max reduction</div></button>
+  <div class="lc-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px">
+    <button class="lc active" data-mode="quality" onclick="setCompMode(this)"><div class="lc-name">By Quality<div class="lc-check">✓</div></div><div class="lc-desc">Choose quality level</div></button>
+    <button class="lc" data-mode="target" onclick="setCompMode(this)"><div class="lc-name">By Target Size<div class="lc-check">✓</div></div><div class="lc-desc">Set max file size in KB</div></button>
   </div>
-  <div class="dz" id="dz-compress"><input type="file" id="fi-compress" class="dfi" accept="image/*" multiple>
+  <div id="comp-quality-opts">
+    <span class="slabel">Quality</span>
+    <div class="lc-grid">
+      <button class="lc" data-q="0.95" onclick="setQ(this)"><div class="lc-name">Low<div class="lc-check">✓</div></div><div class="lc-desc">~10-20% smaller</div></button>
+      <button class="lc active" data-q="0.80" onclick="setQ(this)"><div class="lc-name">Balanced<div class="lc-check">✓</div></div><div class="lc-desc">40-60% smaller</div></button>
+      <button class="lc" data-q="0.60" onclick="setQ(this)"><div class="lc-name">High<div class="lc-check">✓</div></div><div class="lc-desc">70-85% smaller</div></button>
+    </div>
+  </div>
+  <div id="comp-target-opts" style="display:none;margin-bottom:14px">
+    <div class="fc" style="padding:14px">
+      <label class="fl2">Target size (KB)</label>
+      <input type="number" class="fi2" id="comp-target-kb" value="50" min="5" max="5000" placeholder="e.g. 20">
+      <div class="fhint">💡 Tip: For better results, compress with <em>By Quality</em> first, then use that file here.</div>
+    </div>
+  </div>
+<div class="dz" id="dz-compress"><input type="file" id="fi-compress" class="dfi" accept="image/*" multiple>
     <div class="dz-ico"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
     <h2>Drop images here</h2><p>JPG, PNG, WebP supported. Multiple files at once.</p><span class="dz-btn">Select images</span></div>
   <div class="qw" id="qs-compress">
@@ -605,8 +618,14 @@ function singleDrop(tool,accept,cb){
 }
 
 /* ═══ COMPRESS ═══ */
-let imgQ=0.80,compQ=[],compNextId=0,compRunning=false;
-function setQ(btn){document.querySelectorAll('#panel-compress .lc').forEach(b=>b.classList.remove('active'));btn.classList.add('active');imgQ=parseFloat(btn.dataset.q);}
+let imgQ=0.80,compMode='quality',compQ=[],compNextId=0,compRunning=false;
+function setQ(btn){document.querySelectorAll('#comp-quality-opts .lc').forEach(b=>b.classList.remove('active'));btn.classList.add('active');imgQ=parseFloat(btn.dataset.q);}
+function setCompMode(btn){
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');compMode=btn.dataset.mode;
+  document.getElementById('comp-quality-opts').style.display=compMode==='quality'?'':'none';
+  document.getElementById('comp-target-opts').style.display=compMode==='target'?'':'none';
+}
 
 document.getElementById('fi-compress').addEventListener('change',e=>{addCompFiles([...e.target.files]);e.target.value='';});
 (function(){const dz=document.getElementById('dz-compress');dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');addCompFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith('image/')));});})();
@@ -629,26 +648,119 @@ async function runCompress(){
   const toP=compQ.filter(i=>i.status==='pending');if(!toP.length)return;
   compRunning=true;document.getElementById('btn-compress').disabled=true;
   for(const item of toP){
-    item.status='working';const st=document.getElementById('cst-'+item.id);const rp=document.getElementById('crp-'+item.id);const rpf=document.getElementById('crpf-'+item.id);
-    if(st){st.className='fst sw';st.textContent='Compressing…';}if(rp)rp.style.display='block';if(rpf)rpf.style.width='40%';
+    item.status='working';
+    const st=document.getElementById('cst-'+item.id);
+    const rp=document.getElementById('crp-'+item.id);
+    const rpf=document.getElementById('crpf-'+item.id);
+    if(st){st.className='fst sw';st.textContent='Compressing…';}
+    if(rp)rp.style.display='block';if(rpf)rpf.style.width='30%';
     try{
-      const{cv}=await loadImgCanvas(item.file);if(rpf)rpf.style.width='80%';
-      const mime=item.file.type==='image/png'?'image/jpeg':item.file.type||'image/jpeg';
-      const blob=await canvasToBlob(cv,mime,imgQ);item.blob=blob;item.status='done';cv.remove();
-      const sv=item.file.size-blob.size;
-      const mt=document.getElementById('cm-'+item.id);if(mt)mt.textContent=fmtSize(item.file.size)+' → '+fmtSize(blob.size)+' (−'+((sv/item.file.size)*100).toFixed(1)+'%)';
-      const row=document.getElementById('cr-'+item.id);if(row)row.className='fr done';if(rp)rp.style.display='none';
+      const{cv,width,height}=await loadImgCanvas(item.file);
+      if(rpf)rpf.style.width='60%';
+
+      let bestBlob;
+
+      // Helper: compress canvas at given quality and optional scale
+      async function compressAt(srcCv, srcW, srcH, quality, scale){
+        let outCv=srcCv;
+        if(scale && scale<1){
+          outCv=document.createElement('canvas');
+          outCv.width=Math.max(32,Math.round(srcW*scale));
+          outCv.height=Math.max(32,Math.round(srcH*scale));
+          const ctx2=outCv.getContext('2d');
+          // Draw in steps for better downscale quality
+          let step=srcCv;
+          let sw=srcW, sh=srcH;
+          while(sw/outCv.width>2){
+            const tmp=document.createElement('canvas');
+            tmp.width=Math.round(sw*0.5); tmp.height=Math.round(sh*0.5);
+            tmp.getContext('2d').drawImage(step,0,0,tmp.width,tmp.height);
+            if(step!==srcCv)step.remove();
+            step=tmp; sw=tmp.width; sh=tmp.height;
+          }
+          ctx2.drawImage(step,0,0,outCv.width,outCv.height);
+          if(step!==srcCv)step.remove();
+        }
+        const b=await canvasToBlob(outCv,'image/jpeg',quality);
+        if(outCv!==srcCv)outCv.remove();
+        return b;
+      }
+
+      if(compMode==='target'){
+        const targetBytes=(parseInt(document.getElementById('comp-target-kb').value)||50)*1024;
+        // Phase 1: binary search on quality at full resolution
+        let lo=0.01, hi=0.92, q=0.5;
+        bestBlob=await compressAt(cv,width,height,hi,1);
+        if(bestBlob.size<=targetBytes){
+          // Already fits at high quality — find highest quality that fits
+          for(let i=0;i<8;i++){
+            q=(lo+hi)/2;
+            const b=await compressAt(cv,width,height,q,1);
+            if(b.size<=targetBytes){bestBlob=b;lo=q;}else{hi=q;}
+          }
+        } else {
+          // Need to reduce resolution too
+          // Try scales from 0.9 down to 0.1
+          const scales=[0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.15,0.1];
+          let found=false;
+          for(const scale of scales){
+            // Binary search quality at this scale
+            lo=0.01;hi=0.92;
+            for(let i=0;i<6;i++){
+              q=(lo+hi)/2;
+              const b=await compressAt(cv,width,height,q,scale);
+              if(b.size<=targetBytes){bestBlob=b;lo=q;found=true;}else{hi=q;}
+            }
+            if(found)break;
+          }
+          // If still not found, use minimum
+          if(!found){
+            bestBlob=await compressAt(cv,width,height,0.05,0.1);
+          }
+        }
+      } else {
+        // Quality mode — binary search for best compression
+        const qualityMap={0.95:0.88, 0.80:0.65, 0.60:0.35};
+        const targetQ=qualityMap[imgQ]||0.65;
+        // Full res at target quality
+        bestBlob=await compressAt(cv,width,height,targetQ,1);
+        // If high mode or result bigger than original, also try scaled
+        if(imgQ===0.60||bestBlob.size>=item.file.size){
+          const scale=imgQ===0.60?0.65:0.80;
+          const b2=await compressAt(cv,width,height,targetQ,scale);
+          if(b2.size<bestBlob.size)bestBlob=b2;
+          // One more pass at even lower quality
+          const b3=await compressAt(cv,width,height,targetQ*0.6,scale);
+          if(b3.size<bestBlob.size)bestBlob=b3;
+        }
+      }
+
+      cv.remove();
+      item.blob=bestBlob;item.status='done';
+      if(rpf)rpf.style.width='100%';
+
+      const sv=item.file.size-bestBlob.size;
+      const pct=((sv/item.file.size)*100).toFixed(1);
+      const mt=document.getElementById('cm-'+item.id);
+      if(mt)mt.textContent=fmtSize(item.file.size)+' → '+fmtSize(bestBlob.size)+' ('+(sv>=0?'−':'+')+(sv>=0?pct:Math.abs(pct))+'%)';
+      const row=document.getElementById('cr-'+item.id);if(row)row.className='fr done';
+      if(rp)rp.style.display='none';
       if(st){st.className='fst sd';st.textContent='Done';}
-      const ico=document.getElementById('ci-'+item.id);if(ico){ico.title='Click to download';ico.style.cursor='pointer';ico.onclick=()=>dl(item.blob,item.file.name.replace(/\.[^.]+$/,'')+'_compressed.jpg');}
+      const ico=document.getElementById('ci-'+item.id);
+      if(ico){ico.title='Click to download';ico.style.cursor='pointer';ico.onclick=()=>dl(item.blob,item.file.name.replace(/\.[^.]+$/,'')+'_compressed.jpg');}
     }catch(err){item.status='error';if(st){st.className='fst se';st.textContent='Failed';}}
   }
   compRunning=false;
   const done=compQ.filter(i=>i.status==='done');
   if(done.length){
     const tO=done.reduce((s,i)=>s+i.file.size,0),tC=done.reduce((s,i)=>s+i.blob.size,0);
-    document.getElementById('sc-orig').textContent=fmtSize(tO);document.getElementById('sc-comp').textContent=fmtSize(tC);document.getElementById('sc-saved').textContent='−'+((( tO-tC)/tO)*100).toFixed(1)+'%';
-    document.getElementById('sc-title').textContent=done.length===1?'Compression complete':done.length+' images compressed';document.getElementById('sc-sub').textContent='Saved '+fmtSize(tO-tC)+' total';
-    document.getElementById('sc-dl').onclick=()=>done.forEach((item,i)=>setTimeout(()=>dl(item.blob,item.file.name.replace(/\.[^.]+$/,'')+'_compressed.jpg'),i*300));show('sc-compress');
+    document.getElementById('sc-orig').textContent=fmtSize(tO);
+    document.getElementById('sc-comp').textContent=fmtSize(tC);
+    document.getElementById('sc-saved').textContent=(tO>tC?'−':'+')+(Math.abs((tO-tC)/tO)*100).toFixed(1)+'%';
+    document.getElementById('sc-title').textContent=done.length===1?'Compression complete':done.length+' images compressed';
+    document.getElementById('sc-sub').textContent='Saved '+fmtSize(Math.abs(tO-tC))+' total';
+    document.getElementById('sc-dl').onclick=()=>done.forEach((item,i)=>setTimeout(()=>dl(item.blob,item.file.name.replace(/\.[^.]+$/,'')+'_compressed.jpg'),i*300));
+    show('sc-compress');
   }
   updCompUI();
 }
