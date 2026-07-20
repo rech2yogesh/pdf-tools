@@ -1429,18 +1429,38 @@ function clrHeic(){heicQ=[];document.getElementById('fl-heic').innerHTML='';hide
 
 async function loadHeicLib(){
   if(heicLibLoaded)return true;
-  return new Promise(resolve=>{
-    const lw=document.getElementById('heic-loading');
-    const lf=document.getElementById('heic-load-fill');
-    const ll=document.getElementById('heic-load-label');
-    lw.style.display='block';lf.style.width='20%';
-    ll.textContent='Loading HEIC decoder library…';
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.3/heic2any.min.js';
-    s.onload=()=>{heicLibLoaded=true;lf.style.width='100%';setTimeout(()=>{lw.style.display='none';},400);resolve(true);};
-    s.onerror=()=>{lw.style.display='none';resolve(false);};
-    document.head.appendChild(s);
-  });
+  const lw=document.getElementById('heic-loading');
+  const lf=document.getElementById('heic-load-fill');
+  const ll=document.getElementById('heic-load-label');
+  lw.style.display='block';lf.style.width='10%';
+  ll.textContent='Loading HEIC decoder…';
+
+  // Try multiple CDN sources
+  const cdns=[
+    'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js',
+    'https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.3/heic2any.min.js'
+  ];
+
+  for(let i=0;i<cdns.length;i++){
+    lf.style.width=((i+1)/cdns.length*80)+'%';
+    ll.textContent='Loading HEIC decoder ('+(i+1)+'/'+cdns.length+')…';
+    const ok=await new Promise(resolve=>{
+      if(window.heic2any){resolve(true);return;}
+      const s=document.createElement('script');
+      s.src=cdns[i];
+      s.onload=()=>resolve(true);
+      s.onerror=()=>resolve(false);
+      document.head.appendChild(s);
+    });
+    if(ok&&window.heic2any){
+      heicLibLoaded=true;lf.style.width='100%';
+      setTimeout(()=>{lw.style.display='none';},300);
+      return true;
+    }
+  }
+  lw.style.display='none';
+  return false;
 }
 
 async function runHeic(){
@@ -1460,8 +1480,10 @@ async function runHeic(){
     if(st){st.className='fst sw';st.textContent='Converting…';}
     if(rp)rp.style.display='block';if(rpf)rpf.style.width='40%';
     try{
-      const blob=await heic2any({blob:item.file,toType:'image/jpeg',quality:0.92});
-      item.blob=Array.isArray(blob)?blob[0]:blob;
+      // Ensure file is treated as HEIC regardless of detected type
+      const heicBlob=new Blob([await item.file.arrayBuffer()],{type:'image/heic'});
+      const result=await heic2any({blob:heicBlob,toType:'image/jpeg',quality:0.92,multiple:false});
+      item.blob=Array.isArray(result)?result[0]:result;
       item.status='done';if(rpf)rpf.style.width='100%';
       const mt=document.getElementById('hm-'+item.id);
       if(mt)mt.textContent=fmtSize(item.file.size)+' → '+fmtSize(item.blob.size);
