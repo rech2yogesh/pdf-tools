@@ -580,8 +580,26 @@ async function runCompress(){
     try{
       const buf=await item.file.arrayBuffer();const doc=await pdfjsLib.getDocument({data:buf}).promise;const n=doc.numPages;const pages=[];
       for(let i=1;i<=n;i++){updRow(item.id,'compress','Page '+i+'/'+n,'sw',null,Math.round((i/n)*90));pages.push({page:await doc.getPage(i),quality:q.quality});}
-      const blob=await buildPDF(pages);item.blob=blob;item.status='done';
-      const sv=item.origSize-blob.size;updRow(item.id,'compress','Done','sd',fmtSize(item.origSize)+' → '+fmtSize(blob.size)+' (−'+((sv/item.origSize)*100).toFixed(1)+'%)',undefined);
+      let blob=await buildPDF(pages);
+      // If compressed is larger than original, keep original
+      if(blob.size>=item.origSize){
+        blob=new Blob([await item.file.arrayBuffer()],{type:'application/pdf'});
+      }
+      item.blob=blob;item.status='done';
+      const sv=item.origSize-blob.size;
+      const pctLabel=sv>0?'−'+((sv/item.origSize)*100).toFixed(1)+'%':'Already optimised';
+      updRow(item.id,'compress','Done','sd',fmtSize(item.origSize)+' → '+fmtSize(blob.size)+' ('+pctLabel+')',undefined);
+      if(sv<=0){
+        // Show optimised notice for this file
+        const row=document.getElementById('row-compress-'+item.id);
+        if(row&&!row.querySelector('.opt-notice')){
+          const notice=document.createElement('div');
+          notice.className='opt-notice';
+          notice.style.cssText='font-size:11px;color:var(--warn);background:var(--warn-dim);border:1px solid var(--warn-bd);border-radius:var(--r);padding:5px 10px;margin-top:6px;line-height:1.5';
+          notice.textContent='This file is already well optimised. Browser-based compression works best on scanned documents and image-heavy PDFs.';
+          row.querySelector('.finfo').appendChild(notice);
+        }
+      }
       const ico=document.getElementById('ico-compress-'+item.id);if(ico){ico.title='Click to download';ico.style.cursor='pointer';ico.onclick=()=>dl(item.blob,item.file.name.replace(/\.pdf$/i,'')+'_compressed.pdf');}
     }catch(err){item.status='error';updRow(item.id,'compress','Failed','se',err.message.slice(0,50),undefined);}
   }
